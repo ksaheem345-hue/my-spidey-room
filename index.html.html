@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khan Saheem's Realistic Room</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body, html {
+            background-color: #050505;
+            background-image: radial-gradient(circle at center, #1a1a24 0%, #000000 100%);
+            font-family: 'Montserrat', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+            cursor: crosshair; /* Adds to the cinematic feel */
+        }
+
+        /* Live Petal Canvas */
+        #petal-container {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .petal {
+            position: absolute;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Rose_petal.png/640px-Rose_petal.png'); /* Real petal image */
+            background-size: cover;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        /* Spawned Flowers on Click */
+        .spawned-flower {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background-image: url('https://images.unsplash.com/photo-1559564479-7a0b5c1926bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80'); 
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%; /* Makes the square photo look like a round flower burst */
+            transform: translate(-50%, -50%) scale(0);
+            pointer-events: none;
+            z-index: 50;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            animation: flowerBurst 4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* The Live Crawling Spider */
+        #live-spider {
+            position: fixed;
+            width: 80px;
+            height: 80px;
+            /* Using a high-res silhouette to mimic a real wandering spider */
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/ea/Spider_transparent.png'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            z-index: 100;
+            transition: all 2s linear; /* Smooth crawling */
+            filter: drop-shadow(5px 10px 5px rgba(0,0,0,0.8));
+        }
+
+        /* Layout Sections */
+        .hero-section, .scanner-section {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 6vw;
+            letter-spacing: 5px;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.9);
+            margin-bottom: 20px;
+        }
+
+        .prompt-text {
+            font-size: 2vw;
+            color: #aaa;
+            margin-top: 5vh;
+            animation: pulse 2s infinite;
+        }
+
+        /* Buttons */
+        button {
+            padding: 15px 40px;
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            background: rgba(20, 20, 20, 0.8);
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 5px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 0 30px rgba(255,255,255,0.8);
+        }
+
+        /* Realistic QR Area */
+        #qrContainer {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .qr-box {
+            background: white;
+            padding: 15px;
+            width: 300px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+
+        .qr-box img { width: 100%; display: block; }
+        .upi-text { font-family: 'Montserrat', sans-serif; font-size: 1.2rem; letter-spacing: 2px; }
+
+        /* The Final Boom Web Screen */
+        #boomScreen {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: url('https://www.transparenttextures.com/patterns/cobweb.png'), rgba(0,0,0,0.95);
+            z-index: 999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        .welcome-text {
+            font-family: 'Cinzel', serif;
+            font-size: 5vw;
+            color: #fff;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+        }
+
+        /* Animations */
+        @keyframes flowerBurst {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 1; filter: brightness(2); }
+            20% { transform: translate(-50%, -50%) scale(1.2) rotate(15deg); opacity: 1; filter: brightness(1); }
+            80% { transform: translate(-50%, -50%) scale(1) rotate(20deg); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(0.8) rotate(25deg); opacity: 0; }
+        }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <audio id="boomSound">
+        <source src="https://assets.mixkit.co/active_storage/sfx/224/224-preview.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="petal-container"></div>
+    <div id="live-spider"></div>
+
+    <div class="hero-section">
+        <h1>THE SPIDER'S SANCTUARY</h1>
+        <div class="prompt-text">
+            Please Go Down <br> ↓
+        </div>
+    </div>
+
+    <div class="scanner-section" id="scannerArea">
+        <button id="revealBtn">Click To See The Magic</button>
+
+        <div id="qrContainer">
+            <h2>Pay some amount to see the magic!</h2>
+            <div class="qr-box">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=upi://pay?pa=6006699070@axl&pn=KhanSaheem" alt="UPI QR">
+            </div>
+            <p class="upi-text">6006699070@axl</p>
+            <button id="paidBtn">I Have Paid (Trigger Magic)</button>
+        </div>
+    </div>
+
+    <div id="boomScreen">
+        <h1 class="welcome-text">WELCOME TO MY ROOM<br>KHAN SAHEEM</h1>
+    </div>
+
+    <script>
+        // 1. Live Petal Physics Engine
+        const petalContainer = document.getElementById('petal-container');
+        function createPetal() {
+            const petal = document.createElement('div');
+            petal.classList.add('petal');
+            
+            // Randomize size, starting position, and 3D rotation
+            const size = Math.random() * 20 + 15; // 15px to 35px
+            petal.style.width = `${size}px`;
+            petal.style.height = `${size}px`;
+            petal.style.left = `${Math.random() * 100}vw`;
+            petal.style.top = `-50px`;
+
+            let rotation = Math.random() * 360;
+            let fallSpeed = Math.random() * 3 + 2; // Falls over 2 to 5 seconds
+            
+            petalContainer.appendChild(petal);
+
+            // Animate petal using JS for realism (tumbling effect)
+            let currentY = -50;
+            let currentX = parseFloat(petal.style.left);
+            let sway = Math.random() * 2 - 1;
+
+            const fallInterval = setInterval(() => {
+                currentY += fallSpeed;
+                currentX += Math.sin(currentY / 50) * sway; // Wind sway
+                rotation += 2; // Tumbling rotation
+                
+                petal.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) rotate3d(1, 1, 1, ${rotation}deg)`;
+
+                if (currentY > window.innerHeight) {
+                    clearInterval(fallInterval);
+                    petal.remove();
+                }
+            }, 30);
+        }
+        setInterval(createPetal, 400); // Spawn a new petal every 400ms
+
+        // 2. Global Click Event: Sound Boom + Realistic Flower Spawn
+        const boomSound = document.getElementById('boomSound');
+        
+        document.addEventListener('click', (e) => {
+            // Play cinematic boom
+            boomSound.currentTime = 0; // Reset sound to start
+            boomSound.play();
+
+            // Spawn realistic flower burst at mouse coordinates
+            const flower = document.createElement('div');
+            flower.classList.add('spawned-flower');
+            flower.style.left = `${e.clientX}px`;
+            flower.style.top = `${e.clientY}px`;
+            document.body.appendChild(flower);
+
+            // Remove flower after animation finishes (4 seconds)
+            setTimeout(() => {
+                flower.remove();
+            }, 4000);
+        });
+
+        // 3. Live Crawling Spider AI
+        const spider = document.getElementById('live-spider');
+        function moveSpider() {
+            // Pick a random spot on the screen
+            const newX = Math.random() * (window.innerWidth - 100);
+            const newY = Math.random() * (window.innerHeight - 100);
+            
+            // Calculate angle to rotate spider towards its destination
+            const currentX = spider.offsetLeft;
+            const currentY = spider.offsetTop;
+            const dy = newY - currentY;
+            const dx = newX - currentX;
+            let theta = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            spider.style.transform = `translate(${newX}px, ${newY}px) rotate(${theta + 90}deg)`;
+        }
+        // Move spider every 3 seconds
+        setInterval(moveSpider, 3000);
+        moveSpider(); // Initial move
+
+        // 4. Page Logic & Magic Voice
+        const revealBtn = document.getElementById('revealBtn');
+        const qrContainer = document.getElementById('qrContainer');
+        const paidBtn = document.getElementById('paidBtn');
+        const boomScreen = document.getElementById('boomScreen');
+
+        revealBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent the global click from firing twice
+            revealBtn.style.display = 'none';
+            qrContainer.style.display = 'flex';
+            setTimeout(() => qrContainer.style.opacity = 1, 100);
+        });
+
+        paidBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // Show the cinematic web overlay
+            boomScreen.style.display = 'flex';
+            setTimeout(() => boomScreen.style.opacity = 1, 100);
+
+            // Trigger the AI Voice Welcome
+            if ('speechSynthesis' in window) {
+                // Slight delay so the screen goes black before the voice speaks
+                setTimeout(() => {
+                    const message = new SpeechSynthesisUtterance("Thanks dear for payment. Welcome to my room, KHAN SAHEEM");
+                    message.rate = 0.85; // Slower, more cinematic voice
+                    message.pitch = 0.5; // Deeper voice
+                    window.speechSynthesis.speak(message);
+                }, 800);
+            }
+        });
+    </script>
+</body>
+</html>
